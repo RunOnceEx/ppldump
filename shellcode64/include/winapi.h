@@ -39,6 +39,10 @@ typedef FARPROC(WINAPI * GetProcAddress_t)(
 	LPCSTR lpProcName
 );
 
+typedef BOOL(WINAPI * CloseHandle_t)(
+	HANDLE hHandle
+);
+
 typedef HANDLE(WINAPI * CreateFileA_t)(
 	LPCSTR lpFileName,
 	DWORD dwDesiredAccess,

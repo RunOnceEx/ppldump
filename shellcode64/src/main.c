@@ -41,6 +41,7 @@
 VOID WindowsEntrypoint(LPCSTR szDumpPath)
 {
   CreateFileA_t         CreateFileA         = NULL;
+  CloseHandle_t         CloseHandle         = NULL;
   GetCurrentProcess_t   GetCurrentProcess   = NULL;
   GetCurrentProcessId_t GetCurrentProcessId = NULL;
   LoadLibraryA_t        LoadLibraryA        = NULL;
@@ -64,6 +65,7 @@ VOID WindowsEntrypoint(LPCSTR szDumpPath)
   Kernel32Ptr         = GetPeBase(HASH_KERNEL32);
   LoadLibraryA        = GetPeFunc(Kernel32Ptr, HASH_LOADLIBRARYA);
   CreateFileA         = GetPeFunc(Kernel32Ptr, HASH_CREATEFILEA);
+  CloseHandle         = GetPeFunc(Kernel32Ptr, HASH_CLOSEHANDLE);
   GetCurrentProcess   = GetPeFunc(Kernel32Ptr, HASH_GETCURRENTPROCESS);
   GetCurrentProcessId = GetPeFunc(Kernel32Ptr, HASH_GETCURRENTPROCESSID);
   GetProcAddress      = GetPeFunc(Kernel32Ptr, HASH_GETPROCADDRESS);
@@ -84,8 +86,11 @@ VOID WindowsEntrypoint(LPCSTR szDumpPath)
 	GetCurrentProcess(),
 	GetCurrentProcessId(),
 	hFile,
-	MiniDumpWithFullMemory,
+	MiniDumpWithFullMemory 
+      | MiniDumpWithPrivateReadWriteMemory
+      | MiniDumpWithPrivateWriteCopyMemory,
 	NULL, NULL, NULL
     );
+    CloseHandle(hFile);
   };
 };

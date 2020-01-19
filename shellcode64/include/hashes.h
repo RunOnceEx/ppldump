@@ -28,6 +28,7 @@
 
 #define HASH_LOADLIBRARYA        0x5fd12a68
 #define HASH_GETPROCADDRESS      0xe202938c
+#define HASH_CLOSEHANDLE         0x86b785d4
 #define HASH_DBGHELP             0x23456812
 #define HASH_MINIDUMPWRITEDUMP   0x79ee9f76
 #define HASH_CREATEFILEA         0xf17b7de7
