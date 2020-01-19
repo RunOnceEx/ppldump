@@ -34,6 +34,11 @@ typedef HMODULE(WINAPI * LoadLibraryA_t)(
 	LPCSTR lpLibFileName
 );
 
+typedef FARPROC(WINAPI * GetProcAddress_t)(
+	HMODULE hModule,
+	LPCSTR lpProcName
+);
+
 typedef HANDLE(WINAPI * CreateFileA_t)(
 	LPCSTR lpFileName,
 	DWORD dwDesiredAccess,
@@ -44,7 +49,7 @@ typedef HANDLE(WINAPI * CreateFileA_t)(
 	HANDLE hTemplateFile
 );
 
-typedef BOOL (WINAPI * MiniDumpWriteDump_t)(
+typedef BOOL (*MiniDumpWriteDump_t)(
 	HANDLE hProcess,
 	DWORD ProcessId,
 	HANDLE hFile,

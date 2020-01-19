@@ -6,7 +6,7 @@ CC      := x86_64-w64-mingw32-gcc
 SRCS    := $(wildcard src/*.c)
 OBJS    := $(SRCS:%.c=%.o)
 CFLAGS  := -O3 -ffunction-sections -fno-asynchronous-unwind-tables -nostdlib -fno-ident -falign-functions
-INCS    := -Iinclude -Iinclude/subhook
+INCS    := -Iinclude 
 LFLAGS  := -Wl,-s,--no-seh,-Tinclude/linked.x64.ld
 
 all: payload.x64.exe payload.x64.bin
