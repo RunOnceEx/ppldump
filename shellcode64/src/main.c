@@ -82,15 +82,18 @@ VOID WindowsEntrypoint(LPCSTR szDumpPath)
 	FILE_ATTRIBUTE_NORMAL,
 	NULL
     );
-    MiniDumpWriteDump(
-	GetCurrentProcess(),
-	GetCurrentProcessId(),
-	hFile,
-	MiniDumpWithFullMemory 
-      | MiniDumpWithPrivateReadWriteMemory
-      | MiniDumpWithPrivateWriteCopyMemory,
-	NULL, NULL, NULL
-    );
-    CloseHandle(hFile);
+    if ( hFile != NULL )
+    {
+      MiniDumpWriteDump(
+	  GetCurrentProcess(),
+	  GetCurrentProcessId(),
+	  hFile,
+	  MiniDumpWithFullMemory 
+        | MiniDumpWithPrivateReadWriteMemory
+        | MiniDumpWithPrivateWriteCopyMemory,
+	  NULL, NULL, NULL
+      );
+      CloseHandle(hFile);
+    };
   };
 };

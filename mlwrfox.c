@@ -27,4 +27,15 @@ BOOL AcquireHandle(
   DWORD ReturnByte = 0;
   return DeviceIoControl(hDriver, IOCTL_LEAK, UserPid, sizeof(DWORD),
 		  OutHandle, sizeof(HANDLE), &ReturnByte, NULL);
-};	
+};
+
+BOOL AcquireThread(
+  HANDLE hDriver,
+  PDWORD UserThrd,
+  PHANDLE OutHandle
+)
+{
+  DWORD ReturnByte = 0;
+  return DeviceIoControl(hDriver, IOCTL_THRD, UserThrd, sizeof(DWORD),
+		  OutHandle, sizeof(HANDLE), &ReturnByte, NULL);
+};
