@@ -1,7 +1,3 @@
-#
-# Builds:
-#	pe_util.c hs_util.c main.c (x64)
-#
 CC      := x86_64-w64-mingw32-gcc
 SRCS    := $(wildcard src/*.c)
 OBJS    := $(SRCS:%.c=%.o)

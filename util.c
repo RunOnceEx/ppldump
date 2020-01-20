@@ -1,8 +1,3 @@
-/*
- * Utilities for locating arbitary
- * processes, and loading the driver
- * into kernel space.
-*/
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <tlhelp32.h>

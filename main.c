@@ -1,9 +1,3 @@
-/*
- * pplkill (c) Defeating Protected Process Light
- * Using A Signed, Vulnerable Driver With The 
- * Ability To Steal Arbitrary Handles From 
- * Various Process's.
-*/
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winternl.h>
@@ -13,11 +7,6 @@
 #include "shellcode.x64.h"
 #include "mlwrfox.h"
 #include "util.h"
-
-extern NTSTATUS NtAlertResumeThread(
-		HANDLE hThread,
-		PULONG SuspendCount
-);
 
 void usage(char ** argv)
 {
